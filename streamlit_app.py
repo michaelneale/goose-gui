@@ -39,9 +39,14 @@ if user_command := st.chat_input("Enter your command:"):
             line = st.session_state.process.stdout.readline()
             if not line:
                 break
-            with st.chat_message("assistant"):
-                st.markdown(line)
-            st.session_state.messages.append({"role": "assistant", "content": line})
+            line = line.replace("G❯", '')
+            line = line.lstrip()
+            if not line.startswith("starting session") and len(line) > 0 and line.strip() != user_command.strip():
+                with st.chat_message("assistant"):
+                    st.markdown(line)
+                    print("line", line)
+                    print("user command", user_command)
+                st.session_state.messages.append({"role": "assistant", "content": line})
 
         # Check for errors
         if error_line := st.session_state.process.stderr.readline():
