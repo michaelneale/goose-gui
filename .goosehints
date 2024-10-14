@@ -1,0 +1,18 @@
+# Goose Hints for Streamlit App
+
+## About the App
+This Streamlit app allows users to execute shell commands from a web-based interface. Users can specify a directory, choose whether to stay in session, and send commands via a text box. The outputs are displayed in real-time, accumulating results from command executions.
+
+## How to Validate
+To ensure that the Python code in this app is valid, you can run:
+```
+python -m py_compile streamlit_app.py
+```
+This command will check for syntax errors in the script.
+
+## How to Run
+To run the Streamlit app, use:
+```
+streamlit run streamlit_app.py
+```
+This command starts the app, which will open in your default web browser. You can then specify commands in the text box, execute them, and view their outputs on the app interface.
