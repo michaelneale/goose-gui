@@ -33,6 +33,7 @@ if user_command := st.chat_input("Enter your command:"):
     if st.session_state.process:
         st.session_state.process.stdin.write(user_command + '\n')
         st.session_state.process.stdin.flush()
+        
 
         # Display each line as an assistant message
         while True:
