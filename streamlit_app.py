@@ -10,6 +10,11 @@ def main():
 
     user_command = st.text_area("Enter your command:")
 
+    session_state = st.session_state
+
+    if 'output' not in session_state:
+        session_state.output = []  # Initialize storage for output lines
+
     output_placeholder = st.empty()
 
     session_state = st.session_state
@@ -57,7 +62,8 @@ def main():
             process.stdin.flush()
 
             # Capture and stream output after sending each command
-            output = []
+            session_state.output.extend(output)
+
             while True:
                 line = process.stdout.readline()
                 if not line and process.poll() is not None:
