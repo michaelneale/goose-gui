@@ -1,18 +1,9 @@
 import streamlit as st
 import subprocess
 
-st.title("Simple Shell Chat")
+GOOSE_EXECUTABLE = '/Users/micn/Documents/code/goose/.venv/bin/goose'
 
-# Initialize shell session if not already started
-if 'process' not in st.session_state:
-    st.session_state.process = subprocess.Popen(
-        ['goose', 'session', 'start'],
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True
-    )
-    print("----> starting goose")
+st.title("Simple Shell Chat")
 
 st.session_state.commenced = False
 
@@ -32,35 +23,27 @@ if user_command := st.chat_input("Enter your command:"):
         st.markdown(user_command)
     st.session_state.messages.append({"role": "user", "content": user_command})
 
-
     # Send command to shell and capture output
-    if st.session_state.process:
+    with open('tempfile.txt', 'w') as f:
+        f.write(user_command)
 
-        st.session_state.process.stdin.write(user_command + '\n')
-        st.session_state.process.stdin.flush()
-        
+    process = subprocess.Popen(f'{GOOSE_EXECUTABLE} run --resume-session tempfile.txt', 
+                                shell=True, 
+                                stdout=subprocess.PIPE, 
+                                stderr=subprocess.PIPE, 
+                                text=True)
 
-        # Display each line as an assistant message
-        while True:
-            line = st.session_state.process.stdout.readline()
-            #print(f"line received [{line.strip()}]")
-            wait_prompt = line.strip() == "G❯" 
+    # Wait for process to complete and capture all output
+    stdout, stderr = process.communicate()
 
-            if not line or (st.session_state.commenced and wait_prompt):
-                break
+    # Display the complete output as a single assistant message
+    if stdout:
+        with st.chat_message("assistant"):
+            st.markdown(stdout)
+        st.session_state.messages.append({"role": "assistant", "content": stdout})
 
-            if wait_prompt and not st.session_state.commenced:
-                st.session_state.commenced = True
-
-            line = line.replace("G❯", '')
-            line = line.lstrip()
-            if not line.startswith("starting session") and len(line) > 0 and line.strip() != user_command.strip():
-                with st.chat_message("assistant"):
-                    st.markdown(line)
-                st.session_state.messages.append({"role": "assistant", "content": line})
-
-        # Check for errors
-        if error_line := st.session_state.process.stderr.readline():
-            with st.chat_message("error"):
-                st.markdown(error_line)
-            st.session_state.messages.append({"role": "error", "content": error_line})
+    # Check for and display errors
+    if stderr:
+        with st.chat_message("error"):
+            st.markdown(stderr)
+        st.session_state.messages.append({"role": "error", "content": stderr})
