@@ -3,7 +3,7 @@ import subprocess
 
 GOOSE_EXECUTABLE = '/Users/micn/Documents/code/goose/.venv/bin/goose'
 
-st.title("Simple Shell Chat")
+st.title("goose")
 
 st.session_state.commenced = False
 
@@ -25,7 +25,7 @@ if user_command := st.chat_input("Enter your command:"):
 
     # Send command to shell and capture output
     with open('tempfile.txt', 'w') as f:
-        f.write(user_command)
+        f.write("Run the following command, but EXTREMELY CRITICAL IMPORTANT: Please return results formatted as markdown for display, and don't repeat instructions and commands: \n" + user_command)
 
     process = subprocess.Popen(f'{GOOSE_EXECUTABLE} run --resume-session tempfile.txt', 
                                 shell=True, 
