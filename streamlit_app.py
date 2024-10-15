@@ -26,6 +26,7 @@ if user_command := st.chat_input("Enter your command:"):
     # Send command to shell and capture output
     with open('tempfile.txt', 'w') as f:
         f.write("Run the following command, but EXTREMELY CRITICAL IMPORTANT: Please return results formatted as markdown for display, and don't repeat instructions and commands: \n" + user_command)
+    
 
     process = subprocess.Popen(f'{GOOSE_EXECUTABLE} run --resume-session tempfile.txt', 
                                 shell=True, 
@@ -33,14 +34,19 @@ if user_command := st.chat_input("Enter your command:"):
                                 stderr=subprocess.PIPE, 
                                 text=True)
 
-    # Wait for process to complete and capture all output
-    stdout, stderr = process.communicate()
+    with st.status('goose thinking'):
+        # Wait for process to complete and capture all output
+        stdout, stderr = process.communicate()
+    
+
+    # Filter out lines starting with 'starting session' or 'ending run'
+    filtered_stdout = '\n'.join(line for line in stdout.splitlines() if not line.startswith(('starting session', 'ended run', '\u2500\u2500\u2500 shell', 'saving to', 'to resume')))
 
     # Display the complete output as a single assistant message
-    if stdout:
+    if filtered_stdout:
         with st.chat_message("assistant"):
-            st.markdown(stdout)
-        st.session_state.messages.append({"role": "assistant", "content": stdout})
+            st.markdown(filtered_stdout)
+        st.session_state.messages.append({"role": "assistant", "content": filtered_stdout})
 
     # Check for and display errors
     if stderr:
